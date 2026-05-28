@@ -44,11 +44,16 @@ foreach flag : warn_suppressions
   endif
 endforeach
 
-fs = import('fs')
+# Collect all .c source files using run_command (compatible with all Meson versions)
+_src_list = run_command(
+  'find', 'src/cspice', '-name', '*.c', '-maxdepth', '1',
+  capture : true,
+  check : true,
+)
 
 cspice_sources = []
-foreach f : fs.glob('src/cspice/*.c')
-  cspice_sources += f
+foreach f : _src_list.stdout().strip().split('\n')
+  cspice_sources += files(f)
 endforeach
 
 cspice_inc = include_directories('include')
@@ -62,7 +67,8 @@ cspice_lib = static_library(
 )
 
 install_headers(
-  fs.glob('include/*.h'),
+  run_command('find', 'include', '-name', '*.h', '-maxdepth', '1', capture : true, check : true)
+    .stdout().strip().split('\n'),
   subdir : 'cspice',
 )
 
