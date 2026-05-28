@@ -1,0 +1,6 @@
+# Build artifacts
+builddir/
+dist/
+
+# macOS
+.DS_Store

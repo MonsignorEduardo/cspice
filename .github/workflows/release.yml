@@ -1,0 +1,74 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  build:
+    name: Build (${{ matrix.label }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            label: linux-x86_64
+          - os: ubuntu-24.04-arm
+            label: linux-aarch64
+          - os: macos-latest
+            label: macos-arm64
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Install Meson and Ninja
+        run: pip install meson ninja
+
+      - name: Setup build
+        run: meson setup builddir --prefix=${{ github.workspace }}/dist
+
+      - name: Build and install
+        run: ninja -C builddir install
+
+      - name: Package
+        run: |
+          VERSION=${GITHUB_REF_NAME#v}
+          ARCHIVE="cspice-${VERSION}-${{ matrix.label }}.tar.gz"
+          tar czf "${ARCHIVE}" \
+            -C ${{ github.workspace }}/dist \
+            lib/libcspice.a \
+            include/cspice
+          echo "ARCHIVE=${ARCHIVE}" >> $GITHUB_ENV
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: cspice-${{ matrix.label }}
+          path: cspice-*.tar.gz
+
+  release:
+    name: Create GitHub Release
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          merge-multiple: true
+
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: cspice-*.tar.gz
+          generate_release_notes: true
