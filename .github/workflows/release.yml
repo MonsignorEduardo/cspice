@@ -4,6 +4,12 @@ on:
   push:
     tags:
       - "N*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag to release (e.g. N0067)"
+        required: true
+        type: string
 
 jobs:
   build:
@@ -38,7 +44,7 @@ jobs:
 
       - name: Package
         run: |
-          VERSION=${GITHUB_REF_NAME}
+          VERSION=${{ github.event.inputs.tag || github.ref_name }}
           ARCHIVE="cspice-${VERSION}-${{ matrix.label }}.tar.gz"
           # Find libcspice.a wherever meson installed it (lib/ or lib64/ or lib/x86_64-linux-gnu/)
           find ${{ github.workspace }}/dist -type f | sort
@@ -67,5 +73,6 @@ jobs:
       - name: Create release
         uses: softprops/action-gh-release@v3
         with:
+          tag_name: ${{ github.event.inputs.tag || github.ref_name }}
           files: cspice-*.tar.gz
           generate_release_notes: true
