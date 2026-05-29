@@ -3,7 +3,7 @@ name: Release
 on:
   push:
     tags:
-      - "v*"
+      - "N*"
 
 jobs:
   build:
@@ -38,7 +38,7 @@ jobs:
 
       - name: Package
         run: |
-          VERSION=${GITHUB_REF_NAME#v}
+          VERSION=${GITHUB_REF_NAME}
           ARCHIVE="cspice-${VERSION}-${{ matrix.label }}.tar.gz"
           tar czf "${ARCHIVE}" \
             -C ${{ github.workspace }}/dist \
