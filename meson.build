@@ -56,7 +56,9 @@ foreach f : _src_list.stdout().strip().split('\n')
   cspice_sources += files(f)
 endforeach
 
-cspice_inc = include_directories('include')
+# Headers live under include/cspice/ so consumers can use #include <cspice/SpiceUsr.h>
+cspice_inc = include_directories('include/cspice')  # for internal compilation
+cspice_inc_public = include_directories('include')   # exported to consumers
 
 cspice_lib = static_library(
   'cspice',
@@ -67,14 +69,14 @@ cspice_lib = static_library(
 )
 
 install_headers(
-  run_command('find', 'include', '-name', '*.h', '-maxdepth', '1', capture : true, check : true)
+  run_command('find', 'include/cspice', '-name', '*.h', '-maxdepth', '1', capture : true, check : true)
     .stdout().strip().split('\n'),
   subdir : 'cspice',
 )
 
 cspice_dep = declare_dependency(
   link_with : cspice_lib,
-  include_directories : cspice_inc,
+  include_directories : cspice_inc_public,
 )
 
 meson.override_dependency('cspice', cspice_dep)
