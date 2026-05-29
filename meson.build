@@ -54,7 +54,7 @@ endforeach
 cspice_inc        = include_directories('include/cspice')  # internal
 cspice_inc_public = include_directories('include')          # exported
 
-cspice_lib = both_libraries(
+cspice_lib = static_library(
   'cspice',
   cspice_sources,
   include_directories : cspice_inc,
@@ -65,7 +65,7 @@ cspice_lib = both_libraries(
 install_headers(cspice_headers, subdir : 'cspice')
 
 cspice_dep = declare_dependency(
-  link_with : cspice_lib.get_static_lib(),
+  link_with : cspice_lib,
   include_directories : cspice_inc_public,
 )
 
