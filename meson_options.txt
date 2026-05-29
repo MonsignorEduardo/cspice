@@ -1,6 +1,0 @@
-option(
-  'version',
-  type : 'string',
-  value : 'N0067',
-  description : 'CSPICE toolkit version from NAIF',
-)
