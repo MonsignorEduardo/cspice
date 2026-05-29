@@ -40,10 +40,9 @@ jobs:
         run: |
           VERSION=${GITHUB_REF_NAME}
           ARCHIVE="cspice-${VERSION}-${{ matrix.label }}.tar.gz"
-          tar czf "${ARCHIVE}" \
-            -C ${{ github.workspace }}/dist \
-            lib/libcspice.a \
-            include/cspice
+          # Find libcspice.a wherever meson installed it (lib/ or lib64/ or lib/x86_64-linux-gnu/)
+          find ${{ github.workspace }}/dist -type f | sort
+          tar czf "${ARCHIVE}" -C ${{ github.workspace }}/dist .
           echo "ARCHIVE=${ARCHIVE}" >> $GITHUB_ENV
 
       - name: Upload artifact
