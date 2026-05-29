@@ -46,13 +46,9 @@ jobs:
         run: |
           VERSION=${{ github.event.inputs.tag || github.ref_name }}
           ARCHIVE="cspice-${VERSION}-${{ matrix.label }}.tar.gz"
-          STAGING=${{ github.workspace }}/staging
-          mkdir -p "${STAGING}/lib" "${STAGING}/include/cspice"
-          # libcspice.a may land in lib/, lib64/, or lib/<triple>/ depending on platform
-          find ${{ github.workspace }}/dist -name "libcspice.a" -exec cp {} "${STAGING}/lib/libcspice.a" \;
-          # headers are always installed under include/cspice/
-          cp ${{ github.workspace }}/dist/include/cspice/*.h "${STAGING}/include/cspice/"
-          tar czf "${ARCHIVE}" -C "${STAGING}" lib/libcspice.a include/cspice
+          # Find libcspice.a wherever meson installed it (lib/ or lib64/ or lib/x86_64-linux-gnu/)
+          find ${{ github.workspace }}/dist -type f | sort
+          tar czf "${ARCHIVE}" -C ${{ github.workspace }}/dist .
           echo "ARCHIVE=${ARCHIVE}" >> $GITHUB_ENV
 
       - name: Upload artifact
